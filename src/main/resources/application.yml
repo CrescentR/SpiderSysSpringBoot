@@ -1,0 +1,39 @@
+server:
+  port: 8888
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/spiderDb
+    username: postgres
+    password: 123456
+    hikari: # 连接池（HikariCP，Spring Boot 默认）
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000  # 30s
+      idle-timeout: 600000       # 10min
+      max-lifetime: 1800000      # 30min, 小于云厂商连接回收时间
+      keepalive-time: 300000     # 5min 保活(云数据库常用)
+      data-source-properties:
+        reWriteBatchedInserts: true  # 批量写优化
+        stringtype: unspecified       # 可减少一些 PG 类型映射告警
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 123456
+      database: 0
+  application:
+    name: test-rabbitmq-producer
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    virtualHost: /
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+logging:
+  level:
+    com.multiSpider.mapper: DEBUG
+
