@@ -1,12 +1,10 @@
 package com.multiSpider.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.multiSpider.common.exception.QuickStartException;
+import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
 import com.multiSpider.entity.SpiderResult;
-import com.multiSpider.entity.SpiderTask;
 import com.multiSpider.service.SpiderResultService;
-import com.multiSpider.service.SpiderTaskService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,7 +25,7 @@ public class SpiderResultController {
             Page<SpiderResult> pageInfo =new Page<>(currentPage,pageSize);
             Page<SpiderResult> result= spiderResultService.page(pageInfo);
             return Result.ok("查询成功",result.getRecords(),result.getTotal());
-        }catch (QuickStartException e){
+        }catch (SpiderException e){
             e.printStackTrace();
             return Result.fail(500,"查询失败");
         }

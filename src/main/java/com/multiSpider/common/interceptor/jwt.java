@@ -1,6 +1,6 @@
 package com.multiSpider.common.interceptor;
 
-import com.multiSpider.common.exception.QuickStartException;
+import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.ResultCodeEnum;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -27,7 +27,7 @@ public class jwt {
     public static Claims parseToken(String token) {
 
         if (token == null) {
-            throw new QuickStartException(ResultCodeEnum.ADMIN_LOGIN_AUTH);
+            throw new SpiderException(ResultCodeEnum.ADMIN_LOGIN_AUTH);
         }
         try {
             JwtParser jwtParser = Jwts.parserBuilder()
@@ -35,9 +35,9 @@ public class jwt {
                     .build();
             return jwtParser.parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException e) {
-            throw new QuickStartException(ResultCodeEnum.TOKEN_EXPIRED);
+            throw new SpiderException(ResultCodeEnum.TOKEN_EXPIRED);
         } catch (JwtException e) {
-            throw new QuickStartException(ResultCodeEnum.TOKEN_INVALID);
+            throw new SpiderException(ResultCodeEnum.TOKEN_INVALID);
         }
     }
 

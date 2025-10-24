@@ -19,6 +19,7 @@ public class SpiderDataVO {
     /**
      * 关键词数组；生产端已做兼容，不再使用字符串形式
      */
+    private Integer taskId;
     private List<String> keywords;
 
     private String url;

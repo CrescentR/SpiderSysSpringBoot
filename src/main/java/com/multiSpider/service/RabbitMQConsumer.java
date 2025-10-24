@@ -46,7 +46,7 @@ public class RabbitMQConsumer {
                     // 单条
                     Envelope<SpiderDataVO> single = mapper.readValue(
                             message, new TypeReference<>() {});
-                    persistResults(java.util.List.of(single.getPayload()));
+                    persistResults(List.of(single.getPayload()));
                     break;
                 }
                 case "progress": {
@@ -73,12 +73,13 @@ public class RabbitMQConsumer {
         }
     }
 
-    private void persistResults(java.util.List<SpiderDataVO> items) {
+    private void persistResults(List<SpiderDataVO> items) {
         // 映射到你的实体 SpiderResult 并批量保存
         List<SpiderResult> list = new ArrayList<>();
         for (SpiderDataVO vo : items) {
             if (vo.getUrl() == null || vo.getUrl().isEmpty()) continue;
             SpiderResult spiderResult = new SpiderResult();
+            spiderResult.setTaskId(vo.getTaskId());
             spiderResult.setUrl(vo.getUrl());
             spiderResult.setTitle(vo.getTitle());
             spiderResult.setSource(vo.getSource());

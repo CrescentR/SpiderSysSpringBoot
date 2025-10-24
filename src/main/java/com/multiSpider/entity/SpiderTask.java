@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
@@ -70,5 +71,6 @@ public class SpiderTask {
      */
     @TableField("updated_at")
     private LocalDateTime updatedAt;
+
 
 }

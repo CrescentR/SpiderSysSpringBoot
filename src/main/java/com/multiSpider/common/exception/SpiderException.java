@@ -10,21 +10,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Slf4j
-public class QuickStartException extends RuntimeException {
+public class SpiderException extends RuntimeException {
 
     private Integer code;
 
-    public QuickStartException(Integer code, String message){
+    public SpiderException(Integer code, String message){
         super(message);
         this.code=code;
     }
 
-    public QuickStartException(ResultCodeEnum resultCodeEnum){
+    public SpiderException(ResultCodeEnum resultCodeEnum){
         super(resultCodeEnum.getMessage());
         this.code=resultCodeEnum.getCode();
     }
     @ExceptionHandler(RuntimeException.class)
-    public Result handleRuntimeException(RuntimeException e) {
+    public Result<String> handleRuntimeException(RuntimeException e) {
         log.error(e.toString(), e);
         return Result.fail(500,"服务器异常");
     }

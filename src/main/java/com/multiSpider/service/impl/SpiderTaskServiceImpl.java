@@ -1,10 +1,15 @@
 package com.multiSpider.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.multiSpider.entity.SpiderTask;
 import com.multiSpider.service.SpiderTaskService;
 import com.multiSpider.mapper.SpiderTaskMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
 * @author CharlesForbit
@@ -14,7 +19,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class SpiderTaskServiceImpl extends ServiceImpl<SpiderTaskMapper, SpiderTask>
     implements SpiderTaskService{
-
+    @Override
+    public List<String> getKeywords(Integer taskId){
+        return getById(taskId).getKeywords();
+    }
 }
 
 

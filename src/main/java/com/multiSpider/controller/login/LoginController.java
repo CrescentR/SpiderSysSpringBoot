@@ -2,7 +2,7 @@ package com.multiSpider.controller.login;
 import com.multiSpider.common.result.CommonVo;
 import com.multiSpider.dto.login.LoginDTO;
 import com.multiSpider.dto.login.ResetDTO;
-import com.multiSpider.common.exception.QuickStartException;
+import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
 import com.multiSpider.common.result.ResultCodeEnum;
 import com.multiSpider.service.login.LoginService;
@@ -49,7 +49,7 @@ public class LoginController {
             if (!Objects.equals(commonVo.getCode(), ResultCodeEnum.SUCCESS.getCode())){
                 return Result.fail(commonVo.getCode(),commonVo.getMessage());
             }
-        }catch (QuickStartException e){
+        }catch (SpiderException e){
             return Result.fail(500,"服务器异常！");
         }
         return Result.ok();

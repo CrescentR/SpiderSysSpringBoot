@@ -14,7 +14,7 @@ import com.multiSpider.vo.login.LoginVo;
 import com.wf.captcha.SpecCaptcha;
 import com.multiSpider.common.contants.RedisConstant;
 import com.multiSpider.dto.login.LoginDTO;
-import com.multiSpider.common.exception.QuickStartException;
+import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
 import com.multiSpider.common.result.ResultCodeEnum;
 import com.multiSpider.common.util.JwtUtil;
@@ -80,14 +80,14 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, User> implements L
         }
         String code=stringredisTemplate.opsForValue().get(loginDTO.getCaptchaKey());
         if (code==null){
-            throw new QuickStartException(ResultCodeEnum.ADMIN_CAPTCHA_CODE_ERROR);
+            throw new SpiderException(ResultCodeEnum.ADMIN_CAPTCHA_CODE_ERROR);
         }
         if (!code.equals(loginDTO.getCaptchaCode().toLowerCase())){
-            throw new QuickStartException(ResultCodeEnum.ADMIN_CAPTCHA_CODE_ERROR);
+            throw new SpiderException(ResultCodeEnum.ADMIN_CAPTCHA_CODE_ERROR);
         }
         String phoneCode=stringredisTemplate.opsForValue().get(LOGIN_CODE_KEY+loginDTO.getPhone());
         if(!loginDTO.getPhoneCode().equals(phoneCode)){
-            throw new QuickStartException(ResultCodeEnum.ADMIN_CODE_ERROR);
+            throw new SpiderException(ResultCodeEnum.ADMIN_CODE_ERROR);
         }
 
         if(loginDTO.getPassword()==null){
@@ -98,10 +98,10 @@ public class LoginServiceImpl extends ServiceImpl<UserMapper, User> implements L
         queryWrapper.eq(User::getPhone, loginDTO.getPhone());
         User user=userMapper.selectOne(queryWrapper);
         if (user==null){
-            throw new QuickStartException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
+            throw new SpiderException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
         }
         if (!user.getPassword().equals(DigestUtils.md5Hex(loginDTO.getPassword()))){
-            throw new QuickStartException(ResultCodeEnum.ADMIN_PASSWORD_ERROR);
+            throw new SpiderException(ResultCodeEnum.ADMIN_PASSWORD_ERROR);
         }
         Long id=user.getId();
         String token=JwtUtil.createToken(user.getId(),user.getName());

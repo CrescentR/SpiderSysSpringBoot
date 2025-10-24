@@ -11,8 +11,8 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return Result.fail();
     }
-    @ExceptionHandler(QuickStartException.class)
-    public Result handle(QuickStartException e){
+    @ExceptionHandler(SpiderException.class)
+    public Result handle(SpiderException e){
         String message=e.getMessage();
         e.printStackTrace();
         return Result.fail(500,"服务器异常！");
