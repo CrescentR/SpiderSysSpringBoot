@@ -15,8 +15,6 @@ public class SpiderCrawlerService {
     }
     public MQReturn callApi(Integer taskId) {
 
-        // POST 请求
-//        Map<String, Object> body = Map.of("name", "张三", "age", 25);
         Map<String, Object> body = Map.of("taskId", taskId, "keywords", spiderTaskService.getKeywords(taskId));
         MQReturn result = webClient.post()
                 .uri("http://localhost:8000/api/crawl/start")

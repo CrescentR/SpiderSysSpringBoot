@@ -2,6 +2,7 @@ package com.multiSpider.mapper;
 
 import com.multiSpider.entity.SpiderTask;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.multiSpider.entity.TaskName;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
 * @Entity com.quickStart.entity.SpiderTask
 */
 public interface SpiderTaskMapper extends BaseMapper<SpiderTask> {
-
+    List<TaskName> selectTaskName();
 }
 
 

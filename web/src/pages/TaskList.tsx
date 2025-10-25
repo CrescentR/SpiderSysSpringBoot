@@ -5,7 +5,7 @@
  */
 
 import React, {useEffect, useState} from 'react'
-import {message, Table, Button, Modal, Form, Input, Space, Popconfirm,Select} from 'antd'
+import {message, Table, Button, Modal, Form, Input, Space, Popconfirm, Select,} from 'antd'
 import type {ColumnsType} from 'antd/es/table'
 // import CustomPageHeader from '@/components/PageHeader'
 import axios from 'axios'
@@ -40,6 +40,7 @@ const TaskListPage: React.FC = () => {
     const [editing, setEditing] = useState<TaskItem | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [listForm] = Form.useForm<TaskItem>();
+    const [searchForm] = Form.useForm();
     const columns: ColumnsType<TaskItem> = [
         {title: "任务名称", dataIndex: "name", key: "name"},
         {title: "描述", dataIndex: "description", key: "description"},
@@ -71,7 +72,7 @@ const TaskListPage: React.FC = () => {
                             删除
                         </Button>
                     </Popconfirm>
-                    <Button type="link" onClick={()=>runTask(record,record.id)}>
+                    <Button type="link" onClick={() => runTask(record, record.id)}>
                         运行
                     </Button>
                 </Space>
@@ -79,24 +80,43 @@ const TaskListPage: React.FC = () => {
         },
     ]
 
-    const fetchTasks = async (page = currentPage, size = pageSize) => {
+    const fetchTasks = async (page = currentPage, size = pageSize,searchKeyword={}) => {
         try {
             setLoading(true);
-            const res = await axios.get(`${BASE_URL}/SpiderTask/query`, {
-                params: {
-                    currentPage: page, pageSize: size,
-                },
-            })
-            if (res.data.code === 200) {
-                message.destroy();
-                messageApi.success({content: "获取任务列表成功", duration: 2});
-                setTasks(res.data.data);
-                const totalCount = res.data.total || 0;
-                setTotal(totalCount)
-            } else {
-                messageApi.error(res.data.msg || "获取任务列表失败");
+            if(searchKeyword!=null && Object.keys(searchKeyword).length>0){
+                const res = await axios.get(`${BASE_URL}/SpiderTask/search`, {
+                    params: {
+                        currentPage: currentPage,
+                        pageSize: pageSize,
+                        searchKeyword:searchKeyword,
+                    },
+                });
+                if (res.data.code === 200) {
+                    message.destroy();
+                    messageApi.success({content: "搜索任务成功", duration: 2});
+                    setTasks(res.data.data);
+                    const totalCount = res.data.total || 0;
+                    setTotal(totalCount)
+                } else {
+                    messageApi.error(res.data.msg || "搜索任务失败");
+                }
+            }else{
+                const res2 = await axios.get(`${BASE_URL}/SpiderTask/query`, {
+                    params: {
+                        currentPage: page, pageSize: size,
+                    },
+                })
+                if (res2.data.code === 200) {
+                    message.destroy();
+                    messageApi.success({content: "获取任务列表成功", duration: 2});
+                    setTasks(res2.data.data);
+                    const totalCount = res2.data.total || 0;
+                    setTotal(totalCount)
+                } else {
+                    messageApi.error(res2.data.msg || "获取任务列表失败");
+                }
             }
-        } catch (error) {
+            }catch (error) {
             console.error("获取任务列表失败:", error);
             message.error("获取任务列表失败");
         } finally {
@@ -105,7 +125,8 @@ const TaskListPage: React.FC = () => {
         }
     };
     useEffect(() => {
-        fetchTasks(currentPage, pageSize);
+        const values = searchForm.getFieldsValue();
+        fetchTasks(values);
     }, [currentPage, pageSize]);
     const handleKeyword = (keywords: string) => {
         return keywords.split(/[,，]/)              // 按中英文逗号分割
@@ -155,33 +176,42 @@ const TaskListPage: React.FC = () => {
         }
         await fetchTasks();
     }
+    const handleSearch = () => {
+        setCurrentPage(1);
+        fetchTasks(searchForm.getFieldsValue());
+    }
     const handleCancel = () => {
         setModalOpen(false);
         setEditing(null);
         listForm.resetFields();
+    }
+    const handleReset = () => {
+        searchForm.resetFields();
+        setCurrentPage(1);
+        fetchTasks();
     }
     const handleDelete = async (id: number) => {
         const res = await axios.post(`${BASE_URL}/SpiderTask/delete?id=${id}`);
         message.success(res.data.msg || "删除成功");
         await fetchTasks();
     }
-    const runTask=async (record:TaskItem,id:number)=>{
+    const runTask = async (record: TaskItem, id: number) => {
         listForm.setFieldsValue(record);
         const param = await listForm.validateFields();
         const res = await axios.get(`${BASE_URL}/SpiderTask/start?id=${id}`);
-        param.status="已完成";
-        if (res.data.code === 200){
+        param.status = "已完成";
+        if (res.data.code === 200) {
             const res2 = await axios.post(`${BASE_URL}/SpiderTask/update`, {
                 ...param,
                 id: id
             });
-            if (res2.data.code === 200){
+            if (res2.data.code === 200) {
                 await fetchTasks();
                 messageApi.success("任务启动成功!")
-            }else{
+            } else {
                 messageApi.error(res2.data.msg || "任务状态更新失败!")
             }
-        }else{
+        } else {
             messageApi.error(res.data.msg || "任务启动失败!")
         }
     }
@@ -190,6 +220,36 @@ const TaskListPage: React.FC = () => {
             {contextHolder}
             <div className="min-h-screen p-6 bg-white">
                 <div className="max-w-5xl mx-auto">
+                    <Form layout="inline" form={searchForm}>
+                        <Form.Item name="searchInfo" label="搜索">
+                            <Input placeholder="支持搜索名称、描述、关键词、时间" allowClear
+                                   style={{width: 300}}/>
+                        </Form.Item>
+                        <Form.Item name="status" label="任务状态">
+                            <Select
+                                placeholder="选择状态"
+                                allowClear
+                                style={{width: 200}}
+                                onChange={()=>{
+                                    setCurrentPage(1);
+                                    fetchTasks(searchForm.getFieldsValue());
+                                }}
+                            >
+                                <Select.Option value="OK">已完成</Select.Option>
+                                <Select.Option value="CREATED">已创建</Select.Option>
+                                <Select.Option value="FAIL">已失败</Select.Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item>
+                            <Space>
+                                <Button type="primary" onClick={handleSearch}>
+                                    搜索
+                                </Button>
+                                <Button onClick={handleReset}>重置</Button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between mb-4">
                         <h2>任务列表</h2>
                         <Button type="primary" icon={<PlusOutlined/>} onClick={openAdd}>

@@ -22,4 +22,7 @@
         id,name,description,keywords,seed_urls,max_pages,
         timeout,status,created_at,updated_at
     </sql>
+    <select id="selectTaskName" resultType="com.multiSpider.entity.TaskName">
+        SELECT id, name FROM spider_task
+    </select>
 </mapper>

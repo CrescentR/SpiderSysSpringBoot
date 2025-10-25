@@ -4,163 +4,192 @@
  * 使用 React 18 + Ant Design 5 的最新写法，包含详细中文注释，便于学习。
  */
 
-import React,{useEffect, useState } from 'react'
-import {Table, message} from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import React, {useEffect, useState} from 'react'
+import {Table, message,Popconfirm,Button} from 'antd'
+import type {ColumnsType} from 'antd/es/table'
 // import CustomPageHeader from '@/components/PageHeader'
 import axios from 'axios'
-const BASE_URL=import.meta.env.VITE_BASE_URL;
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 // 任务的基本类型定义
 interface TaskItem {
-  id: number
-  taskId: number
-  title: string,
-  keywords: string,
-  url: string,
-  source: string,
-  dateTime: string,
+    id: number
+    taskName: string
+    taskId: number
+    title: string,
+    keywords: string,
+    url: string,
+    source: string,
+    dateTime: string,
 
 }
+
 // 状态选项（下拉框使用）
 // const STATUS_OPTIONS: TaskItem['status'][] = ['待运行', '运行中', '已完成', '失败']
 
 const TaskResultPage: React.FC = () => {
-  // const { token } = theme.useToken()
-  // 任务列表状态（模拟数据源）。真实项目中可替换为后端 API。
-  const [tasks, setTasks] = useState<TaskItem[]>([])
-  const [loading,setLoading]=useState(false);
-  const columns:ColumnsType<TaskItem>=[
-    { title: "任务id", dataIndex: "taskId", key: "taskId" },
-    { title: "标题", dataIndex: "title", key: "title" },
-    { title: "关键词", dataIndex: "keywords", key: "title" },
-    { title: "链接", dataIndex: "url", key: "url" },
-    { title: "来源", dataIndex: "source", key: "source" },
-    { title: "时间", dataIndex: "dateTime", key: "dateTime" },
-  ]
-  const [currentPage, setCurrentPage] = useState<number>(1)
-  const [pageSize, setPageSize] = useState<number>(10)
-  const [total, setTotal] = useState<number>(0)
-  const fetchTasks=async (page = currentPage, size = pageSize) =>{
-    try{
-      setLoading(true);
-      const res=await axios.get(`${BASE_URL}/SpiderResult/query`,{
-        params: {
-          currentPage: page, pageSize: size,
+    const [messageApi, contextHolder] = message.useMessage();
+    const [tasks, setTasks] = useState<TaskItem[]>([])
+    const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState<number>(1)
+    const [pageSize, setPageSize] = useState<number>(10)
+    const [total, setTotal] = useState<number>(0)
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const columns: ColumnsType<TaskItem> = [
+        {title: "任务id", dataIndex: "taskName", key: "taskName"},
+        {title: "标题", dataIndex: "title", key: "title"},
+        {title: "关键词", dataIndex: "keywords", key: "title"},
+        {
+            title: "链接", dataIndex: "url", key: "url",
+            render: (url, _) => (
+                url ? (
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                            color: '#1677ff',
+                            fontWeight: 500,
+                            textDecoration: 'underline',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.color = '#4096ff';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.color = '#1677ff';
+                        }}
+                        onClick={(e) => {
+                            // 可选：防止行点击事件（如果你让整行可点）重复打开
+                            e.stopPropagation();
+                        }}
+                    >
+                        {url}
+                    </a>
+                ) : (
+                    <span style={{color: '#999'}}>无</span>
+                )
+            ),
         },
-      })
-      if(res.data.code === 200) {
-        setTasks(res.data.data);
-        const totalCount = res.data.total || 0;
-        setTotal(totalCount)
-      }else{
-        message.error(res.data.msg || "获取结果列表失败");
-      }
-    }catch (error){
-      console.error("获取结果列表失败:",error);
-      message.error("获取结果列表失败");
-    }finally {
-      setLoading(false)
+        {title: "来源", dataIndex: "source", key: "source"},
+        {title: "时间", dataIndex: "dateTime", key: "dateTime"},
+    ]
+
+
+    const fetchTasks = async (page = currentPage, size = pageSize) => {
+        try {
+            setLoading(true);
+            const res1 = await axios.get(`${BASE_URL}/SpiderResult/query`, {
+                params: {
+                    currentPage: page, pageSize: size,
+                },
+            })
+            const res2 = await axios.get(`${BASE_URL}/SpiderTask/getTaskName`)
+
+            if (res1.data.code === 200) {
+                setTasks(res1.data.data);
+                const totalCount = res1.data.total || 0;
+                setTotal(totalCount)
+            } else {
+                message.destroy();
+                messageApi.error(res1.data.msg || "获取结果列表失败");
+            }
+            if (res2.data.code === 200) {
+                const taskMap: Record<number, string> = {};
+                res2.data.data.forEach((task: { id: number; name: string }) => {
+                    taskMap[task.id] = task.name;
+                });
+                // 将任务名称映射到结果列表
+                res1.data.data.forEach((item: TaskItem) => {
+                    item.taskName = taskMap[item.taskId] || '未知任务';
+                });
+            } else {
+                messageApi.error(res2.data.msg || "获取任务名称失败");
+            }
+        } catch (error) {
+            message.destroy();
+            console.error("获取结果列表失败:", error);
+            messageApi.error("获取结果列表失败");
+        } finally {
+            setLoading(false)
+        }
+    };
+    useEffect(() => {
+        fetchTasks(currentPage, pageSize);
+    }, [currentPage, pageSize]);
+    const rowSelection = {
+        selectedRowKeys,
+        onChange:setSelectedRowKeys,
     }
-  };
-  useEffect(()=>{
-    fetchTasks(currentPage, pageSize);
-  },[currentPage, pageSize]);
-  // // 自增 ID（前端生成，真实项目中由后端生成）
-  // const nextIdRef = React.useRef<number>(3)
-  //
-  // // 新增/编辑弹窗相关状态
-  // const [addOpen, setAddOpen] = React.useState(false)
-  // const [editOpen, setEditOpen] = React.useState(false)
-  // const [editing, setEditing] = React.useState<TaskItem | null>(null)
-  //
-  // // Antd 的 Form 实例（受控表单）
-  // const [addForm] = Form.useForm<{ name: string; status: TaskItem['status'] }>()
-  // const [editForm] = Form.useForm<{ name: string; status: TaskItem['status'] }>()
-  //
-  // // 打开“新增”弹窗
-  // const openAddModal = () => {
-  //   addForm.resetFields()
-  //   setAddOpen(true)
-  // }
-  //
-  // // 提交新增
-  // const submitAdd = async () => {
-  //   try {
-  //     const values = await addForm.validateFields()
-  //     const newTask: TaskItem = {
-  //       id: nextIdRef.current++,
-  //       name: values.name,
-  //       status: values.status,
-  //       createdAt: new Date().toLocaleString()
-  //     }
-  //     setTasks(prev => [newTask, ...prev])
-  //     setAddOpen(false)
-  //     message.success('任务已新增')
-  //   } catch (e) {
-  //     console.error('提交新增失败:', e)
-  //     message.error(`新增任务失败：${getErrorMessage(e)}`)
-  //   }
-  // }
-  //
-  // // 打开“编辑”弹窗
-  // const openEditModal = (record: TaskItem) => {
-  //   setEditing(record)
-  //   editForm.setFieldsValue({ name: record.name, status: record.status })
-  //   setEditOpen(true)
-  // }
-  //
-  // // 提交编辑
-  // const submitEdit = async () => {
-  //   try {
-  //     const values = await editForm.validateFields()
-  //     setTasks(prev => prev.map(t => t.id === editing!.id ? { ...t, name: values.name, status: values.status } : t))
-  //     setEditOpen(false)
-  //     setEditing(null)
-  //     message.success('任务已更新')
-  //   } catch (e) {
-  //     console.error('提交编辑失败:', e)
-  //     message.error(`更新任务失败：${getErrorMessage(e)}`)
-  //   }
-  // }
-  //
-  // // 删除任务（带确认）
-  // const deleteTask = (id: number) => {
-  //   setTasks(prev => prev.filter(t => t.id !== id))
-  //   message.success('任务已删除')
-  // }
+    const handleBatchDelete = async () => {
+        if (selectedRowKeys.length === 0) {
+            messageApi.warning("请先选择要删除的行!");
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await axios.post(`${BASE_URL}/SpiderResult/deleteBatch`, selectedRowKeys)
+            if (res.data.code === 200) {
+                message.destroy();
+                messageApi.success({content:"批量删除成功!",duration:2});
+                setSelectedRowKeys([]);
+                // 删除后刷新列表
+                fetchTasks(currentPage, pageSize);
+            } else {
+                message.destroy();
+                messageApi.error(res.data.msg || "批量删除失败!");
+            }
+        } finally {
+            setLoading(true)
+        }
+    }
 
+    return (
+        <>
+            {contextHolder}
+            <div style={{padding: 20}}>
+                <div style={{marginBottom:16}}>
+                        <Popconfirm
+                            title="确认删除选中的项？"
+                            onConfirm={handleBatchDelete}
+                            okText="确认"
+                            cancelText="取消"
+                        >
+                            <Button danger disabled={!selectedRowKeys.length} loading={loading}>
+                                删除选中项
+                            </Button>
+                        </Popconfirm>
+                </div>
+                    <h2>结果列表</h2>
+                    <Table<TaskItem>
+                        rowSelection={rowSelection}
+                        loading={loading}
+                        rowKey="id"
+                        columns={columns}
+                        dataSource={tasks}
+                        pagination={{
+                            current: currentPage,
+                            pageSize,
+                            total,
+                            showSizeChanger: true,
+                            showQuickJumper: true,
+                            showTotal: (t) => `共 ${t} 条`,
+                            onChange: (page, size) => {
+                                // 页码或页大小变化即触发 useEffect 拉取
+                                setCurrentPage(page)
+                                setPageSize(size ?? pageSize)
+                            },
+                            onShowSizeChange: (_, size) => {
+                                // 切换每页数量时回到第 1 页更友好
+                                setCurrentPage(1)
+                                setPageSize(size)
+                            },
+                        }}
+                    />
 
-  return (
-      <div style={{ padding:20 }}>
-        <h2>结果列表</h2>
-        <Table<TaskItem>
-            loading={loading}
-            rowKey="id"
-            columns={columns}
-            dataSource={tasks}
-            pagination={{
-              current: currentPage,
-              pageSize,
-              total,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (t) => `共 ${t} 条`,
-              onChange: (page, size) => {
-                // 页码或页大小变化即触发 useEffect 拉取
-                setCurrentPage(page)
-                setPageSize(size ?? pageSize)
-              },
-              onShowSizeChange: (_, size) => {
-                // 切换每页数量时回到第 1 页更友好
-                setCurrentPage(1)
-                setPageSize(size)
-              },
-            }}
-        />
-      </div>
-
-
-  )
+            </div>
+        </>
+    )
 }
 
 export default TaskResultPage

@@ -39,4 +39,9 @@ public class SpiderResultController {
         spiderResultService.removeById(id);
         return Result.ok("删除成功");
     }
+    @PostMapping("/deleteBatch")
+    public Result<String> deleteBatchSpiderResult(@RequestBody List<Long> ids){
+        spiderResultService.removeByIds(ids);
+        return Result.ok("批量删除成功");
+    }
 }
