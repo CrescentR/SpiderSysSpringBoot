@@ -7,8 +7,6 @@ import com.multiSpider.common.result.Result;
 import com.multiSpider.entity.*;
 import com.multiSpider.service.SpiderCrawlerService;
 import com.multiSpider.service.SpiderTaskService;
-import jakarta.websocket.server.PathParam;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,17 +56,17 @@ public class SpiderTaskController {
     }
     @PostMapping("/search")
     public Result<List<SpiderTask>> searchSpiderTask(
-            @RequestBody(required = false) SearchInfo searchInfo
+            @RequestBody(required = false) TaskSearchInfo taskSearchInfo
     ) {
         try {
             // 如果 searchInfo 是 null，创建一个默认的 SearchInfo 对象
-            if (searchInfo == null) {
-                searchInfo = new SearchInfo();
-                searchInfo.setCurrentPage(1L);
-                searchInfo.setPageSize(10L);
+            if (taskSearchInfo == null) {
+                taskSearchInfo = new TaskSearchInfo();
+                taskSearchInfo.setCurrentPage(1L);
+                taskSearchInfo.setPageSize(10L);
             }
 
-            Page<SpiderTask> result = spiderTaskService.listSearchTasks(searchInfo);
+            Page<SpiderTask> result = spiderTaskService.listSearchTasks(taskSearchInfo);
             return Result.ok("查询成功", result.getRecords(), result.getTotal());
         } catch (SpiderException e) {
             e.printStackTrace();

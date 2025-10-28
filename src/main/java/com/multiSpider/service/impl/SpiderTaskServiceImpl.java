@@ -1,12 +1,9 @@
 package com.multiSpider.service.impl;
 
-import cn.hutool.core.date.DateTime;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.multiSpider.entity.SearchInfo;
+import com.multiSpider.entity.TaskSearchInfo;
 import com.multiSpider.entity.SpiderTask;
 import com.multiSpider.entity.TaskName;
 import com.multiSpider.service.SpiderTaskService;
@@ -16,9 +13,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
 * @author CharlesForbit
@@ -37,6 +32,10 @@ public class SpiderTaskServiceImpl extends ServiceImpl<SpiderTaskMapper, SpiderT
         return getById(taskId).getKeywords();
     }
     @Override
+    public Integer getTaskPageSize(Integer taskId) {
+        return getById(taskId).getMaxPages();
+    }
+    @Override
     public List<TaskName> getTaskName(){
         return spiderTaskMapper.selectTaskName();
     }
@@ -47,17 +46,17 @@ public class SpiderTaskServiceImpl extends ServiceImpl<SpiderTaskMapper, SpiderT
         return list(queryWrapper);
     }
     @Override
-    public Page<SpiderTask> listSearchTasks(SearchInfo searchInfo){
+    public Page<SpiderTask> listSearchTasks(TaskSearchInfo taskSearchInfo){
         QueryWrapper<SpiderTask> queryWrapper = new QueryWrapper<>();
 
         // 处理分页信息
-        Long currentPage = searchInfo.getCurrentPage() != null ? searchInfo.getCurrentPage() : 1L;
-        Long pageSize = searchInfo.getPageSize() != null ? searchInfo.getPageSize() : 10L;
+        Long currentPage = taskSearchInfo.getCurrentPage() != null ? taskSearchInfo.getCurrentPage() : 1L;
+        Long pageSize = taskSearchInfo.getPageSize() != null ? taskSearchInfo.getPageSize() : 10L;
 
-        String status = searchInfo.getStatus();
-        String searchKeywords = searchInfo.getSearchKeywords();
-        String startTime = searchInfo.getStartTime();
-        String endTime = searchInfo.getEndTime();
+        String status = taskSearchInfo.getStatus();
+        String searchKeywords = taskSearchInfo.getSearchKeywords();
+        String startTime = taskSearchInfo.getStartTime();
+        String endTime = taskSearchInfo.getEndTime();
 
         if (StringUtils.hasText(status)) {
             queryWrapper.eq("status", status);

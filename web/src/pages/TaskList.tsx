@@ -45,19 +45,20 @@ const TaskListPage: React.FC = () => {
 
     /** 表格列配置 */
     const columns: ColumnsType<TaskItem> = [
-        { title: "任务名称", dataIndex: "name", key: "name" },
-        { title: "描述", dataIndex: "description", key: "description" },
+        { title: "任务名称", dataIndex: "name", key: "name", width: 200 },
+        { title: "描述", dataIndex: "description", key: "description", width: 300 },
         {
             title: "关键词",
             dataIndex: "keywords",
             key: "keywords",
             render: (keywords: string[]) =>
                 Array.isArray(keywords) ? keywords.join(", ") : keywords,
+            width: 200,
         },
-        { title: "最大页数", dataIndex: "maxPages", key: "maxPages" },
-        { title: "状态", dataIndex: "status", key: "status" },
-        { title: "创建时间", dataIndex: "createdAt", key: "createdAt" },
-        { title: "更新时间", dataIndex: "updatedAt", key: "updatedAt" },
+        { title: "最大页数", dataIndex: "maxPages", key: "maxPages", width: 150 },
+        { title: "状态", dataIndex: "status", key: "status", width: 150 },
+        { title: "创建时间", dataIndex: "createdAt", key: "createdAt", width: 200 },
+        { title: "更新时间", dataIndex: "updatedAt", key: "updatedAt", width: 200 },
         {
             title: "操作",
             key: "actions",
@@ -82,6 +83,7 @@ const TaskListPage: React.FC = () => {
                     </Button>
                 </Space>
             ),
+            width: 200,
         },
     ];
 
@@ -157,8 +159,9 @@ const TaskListPage: React.FC = () => {
     };
     const rowSelection = {
         selectedRowKeys,
-        onChange:setSelectedRowKeys,
-    }
+        onChange: setSelectedRowKeys,
+    };
+
     const handleOk = async () => {
         const param = await listForm.validateFields();
         if (editing) {
@@ -197,10 +200,10 @@ const TaskListPage: React.FC = () => {
         }
         setLoading(true);
         try {
-            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/deleteBatch`, selectedRowKeys)
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/deleteBatch`, selectedRowKeys);
             if (res.data.code === 200) {
                 message.destroy();
-                messageApi.success({content:"批量删除成功!",duration:2});
+                messageApi.success({ content: "批量删除成功!", duration: 2 });
                 setSelectedRowKeys([]);
                 // 删除后刷新列表
                 fetchTasks(currentPage, pageSize);
@@ -209,9 +212,10 @@ const TaskListPage: React.FC = () => {
                 messageApi.error(res.data.msg || "批量删除失败!");
             }
         } finally {
-            setLoading(true)
+            setLoading(true);
         }
-    }
+    };
+
     const runTask = async (id: number) => {
         const res = await axios.get(`${VITE_BASE_URL}/SpiderTask/start?id=${id}`);
         if (res.data.code === 200) {
@@ -242,7 +246,7 @@ const TaskListPage: React.FC = () => {
                 <div className="max-w-5xl mx-auto">
                     {/* 搜索表单 */}
                     <Form layout="inline" form={searchForm}>
-                        <Form.Item name="searchKeywords" label="搜索">
+                        <Form.Item name="searchKeywords" label="搜索" style={{ marginBottom: "10px" }}>
                             <Input
                                 placeholder="支持搜索名称、描述、关键词"
                                 allowClear
@@ -250,7 +254,7 @@ const TaskListPage: React.FC = () => {
                                 onPressEnter={handleSearch}
                             />
                         </Form.Item>
-                        <Form.Item name="status" label="任务状态">
+                        <Form.Item name="status" label="任务状态" style={{ marginBottom: "10px" }}>
                             <Select
                                 placeholder="选择状态"
                                 allowClear
@@ -262,7 +266,7 @@ const TaskListPage: React.FC = () => {
                                 <Select.Option value="已失败">已失败</Select.Option>
                             </Select>
                         </Form.Item>
-                        <Form.Item name="dateRange" label="日期范围">
+                        <Form.Item name="dateRange" label="日期范围" style={{ marginBottom: "10px" }}>
                             <RangePicker
                                 placeholder={["开始日期", "结束日期"]}
                                 showTime={{ format: "HH:mm" }}
@@ -282,7 +286,6 @@ const TaskListPage: React.FC = () => {
 
                     {/* 操作栏 */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between mb-4 mt-4">
-
                         <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>
                             新增
                         </Button>
@@ -323,6 +326,7 @@ const TaskListPage: React.FC = () => {
                                 fetchTasks(1, size);
                             },
                         }}
+                        scroll={{ x: 'max-content' }}  // 允许横向滚动，支持列宽调整
                     />
 
                     {/* 弹窗表单 */}
