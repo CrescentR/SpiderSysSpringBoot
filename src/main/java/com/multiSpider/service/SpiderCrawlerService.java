@@ -22,6 +22,7 @@ public class SpiderCrawlerService {
                 .retrieve()
                 .bodyToMono(MQReturn.class)
                 .block();
+        spiderTaskService.update().set("status","已完成").eq("id",taskId).update();
         return result;
     }
 }

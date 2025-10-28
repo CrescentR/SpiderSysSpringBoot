@@ -1,6 +1,7 @@
 package com.multiSpider.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.multiSpider.entity.SearchInfo;
 import com.multiSpider.entity.SpiderResult;
 import com.multiSpider.entity.SpiderTask;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -17,5 +18,5 @@ public interface SpiderTaskService extends IService<SpiderTask> {
     List<String> getKeywords(Integer taskId);
     List<TaskName> getTaskName();
     List<SpiderTask> getByStatus(String status);
-    Page<SpiderTask> listSearchTasks(Integer currentPage, Integer pageSize, String searchKeyword, String status);
+    Page<SpiderTask> listSearchTasks(SearchInfo searchInfo);
 }

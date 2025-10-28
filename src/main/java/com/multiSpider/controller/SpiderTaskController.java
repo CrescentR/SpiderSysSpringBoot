@@ -1,12 +1,10 @@
 package com.multiSpider.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
-import com.multiSpider.entity.MQReturn;
-import com.multiSpider.entity.SpiderResult;
-import com.multiSpider.entity.SpiderTask;
-import com.multiSpider.entity.TaskName;
+import com.multiSpider.entity.*;
 import com.multiSpider.service.SpiderCrawlerService;
 import com.multiSpider.service.SpiderTaskService;
 import jakarta.websocket.server.PathParam;
@@ -25,11 +23,16 @@ public class SpiderTaskController {
         this.spiderCrawlerService=spiderCrawlerService;
     }
     @GetMapping("/query")
-    public Result<List<SpiderTask>> querySpiderTask(){
+    public Result<List<SpiderTask>> querySpiderTask(
+            @RequestParam(required = false,defaultValue="1") Integer currentPage,
+            @RequestParam(required = false,defaultValue="10") Integer pageSize
+    ){
         try{
-            List<SpiderTask> list = spiderTaskService.list();
-            Long total = spiderTaskService.count();
-            return Result.ok(list,total);
+            LambdaQueryWrapper<SpiderTask> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.orderByDesc(SpiderTask::getUpdatedAt);
+            Page<SpiderTask> pageInfo =new Page<>(currentPage,pageSize);
+            Page<SpiderTask> result= spiderTaskService.page(pageInfo,queryWrapper);
+            return Result.ok("查询成功",result.getRecords(),result.getTotal());// 按 createTime 降序排列
         }catch (SpiderException e){
             e.printStackTrace();
             return Result.fail(500,"查询失败");
@@ -53,19 +56,23 @@ public class SpiderTaskController {
             return Result.fail(500,"查询失败");
         }
     }
-    @GetMapping("/search")
+    @PostMapping("/search")
     public Result<List<SpiderTask>> searchSpiderTask(
-            @RequestParam(required = false,defaultValue="1") Integer currentPage,
-            @RequestParam(required = false,defaultValue="10") Integer pageSize,
-            @RequestParam String searchKeyword,
-            @RequestParam String status){
-        try{
+            @RequestBody(required = false) SearchInfo searchInfo
+    ) {
+        try {
+            // 如果 searchInfo 是 null，创建一个默认的 SearchInfo 对象
+            if (searchInfo == null) {
+                searchInfo = new SearchInfo();
+                searchInfo.setCurrentPage(1L);
+                searchInfo.setPageSize(10L);
+            }
 
-            Page<SpiderTask> result= spiderTaskService.listSearchTasks(currentPage, pageSize, searchKeyword, status);
-            return Result.ok("查询成功",result.getRecords(),result.getTotal());
-        }catch (SpiderException e){
+            Page<SpiderTask> result = spiderTaskService.listSearchTasks(searchInfo);
+            return Result.ok("查询成功", result.getRecords(), result.getTotal());
+        } catch (SpiderException e) {
             e.printStackTrace();
-            return Result.fail(500,"搜索失败");
+            return Result.fail(500, "搜索失败");
         }
     }
     @PostMapping("/insert")
@@ -94,5 +101,10 @@ public class SpiderTaskController {
     public Result<MQReturn> startSpiderTask(@RequestParam Integer id){
         MQReturn mqReturn=spiderCrawlerService.callApi(id);
         return Result.ok(mqReturn);
+    }
+    @PostMapping("/deleteBatch")
+    public Result<String> deleteBatchSpiderTask(@RequestBody List<Long> ids){
+        spiderTaskService.removeByIds(ids);
+        return Result.ok("批量删除成功");
     }
 }

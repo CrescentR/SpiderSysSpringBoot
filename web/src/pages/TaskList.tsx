@@ -9,13 +9,13 @@ import {
     Space,
     Popconfirm,
     Select,
+    DatePicker,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-// @ts-ignore
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 interface TaskItem {
     id: number;
@@ -28,6 +28,8 @@ interface TaskItem {
     updatedAt: string;
 }
 
+const { RangePicker } = DatePicker;
+
 const TaskListPage: React.FC = () => {
     const [messageApi, contextHolder] = message.useMessage();
     const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -37,7 +39,7 @@ const TaskListPage: React.FC = () => {
     const [total, setTotal] = useState(0);
     const [editing, setEditing] = useState<TaskItem | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
-
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const [listForm] = Form.useForm<TaskItem>();
     const [searchForm] = Form.useForm();
 
@@ -49,7 +51,8 @@ const TaskListPage: React.FC = () => {
             title: "关键词",
             dataIndex: "keywords",
             key: "keywords",
-            render: (keywords: string[]) => (Array.isArray(keywords) ? keywords.join(", ") : keywords),
+            render: (keywords: string[]) =>
+                Array.isArray(keywords) ? keywords.join(", ") : keywords,
         },
         { title: "最大页数", dataIndex: "maxPages", key: "maxPages" },
         { title: "状态", dataIndex: "status", key: "status" },
@@ -82,41 +85,39 @@ const TaskListPage: React.FC = () => {
         },
     ];
 
-    /** ✅ 获取任务列表（统一函数） */
-    const fetchTasks = async (filters?: any) => {
-        const { searchInfo, status } = filters || searchForm.getFieldsValue();
+    const fetchTasks = async (page = currentPage, size = pageSize) => {
+        const formValues = searchForm.getFieldsValue();
+        const { searchKeywords, status, dateRange } = formValues;
 
         try {
             setLoading(true);
-            let res;
 
-            if (searchInfo || status) {
-                // 调用搜索接口
-                res = await axios.get(`${BASE_URL}/SpiderTask/search`, {
-                    params: {
-                        currentPage,
-                        pageSize,
-                        searchKeyword: searchInfo || "",
-                        status: status || "",
-                    },
-                });
-                if (res.data.code === 200) {
-                    const { data, total: totalCount } = res.data;
-                    setTasks(data || []);
-                    setTotal(totalCount || 0);
-                } else {
-                    messageApi.error(res.data.msg || "搜索任务失败");
-                }
+            // 格式化日期范围
+            let startTime = "";
+            let endTime = "";
+            if (dateRange && dateRange.length === 2) {
+                startTime = dateRange[0].format("YYYY-MM-DD HH:mm");
+                endTime = dateRange[1].format("YYYY-MM-DD HH:mm");
+            }
+
+            // 构造请求体
+            const requestBody = {
+                currentPage: page,
+                pageSize: size,
+                searchKeywords: searchKeywords || "",
+                status: status || "",
+                startTime: startTime,
+                endTime: endTime,
+            };
+
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/search`, requestBody);
+
+            if (res.data.code === 200) {
+                const { data, total: totalCount } = res.data;
+                setTasks(data || []);
+                setTotal(totalCount || 0);
             } else {
-                // 调用普通查询接口
-                res = await axios.get(`${BASE_URL}/SpiderTask/query`);
-				
-                if (res.data.code === 200) {
-                    setTasks(res.data.data || []);
-                    setTotal(res.data.total || 0);
-                } else {
-                    messageApi.error(res.data.msg || "获取任务列表失败");
-                }
+                messageApi.error(res.data.msg || "搜索任务失败");
             }
         } catch (error) {
             console.error("获取任务失败:", error);
@@ -126,71 +127,112 @@ const TaskListPage: React.FC = () => {
         }
     };
 
-    /** ✅ 生命周期：加载/分页变化触发 */
+    // 初始加载时只传分页参数
     useEffect(() => {
-        fetchTasks();
-    }, [currentPage, pageSize]);
+        fetchTasks(1, pageSize);
+    }, []);
 
-    /** 添加、编辑、删除逻辑保持不变 */
+    // 状态变化时立即搜索
+    const handleStatusChange = () => {
+        setCurrentPage(1);
+        fetchTasks(1, pageSize);
+    };
+
+    // 日期范围变化时立即搜索
+    const handleDateRangeChange = () => {
+        setCurrentPage(1);
+        fetchTasks(1, pageSize);
+    };
+
     const openAdd = () => {
         setEditing(null);
         listForm.resetFields();
         setModalOpen(true);
     };
+
     const openEdit = (record: TaskItem) => {
         setEditing(record);
         listForm.setFieldsValue(record);
         setModalOpen(true);
     };
+    const rowSelection = {
+        selectedRowKeys,
+        onChange:setSelectedRowKeys,
+    }
     const handleOk = async () => {
         const param = await listForm.validateFields();
         if (editing) {
-            const res = await axios.post(`${BASE_URL}/SpiderTask/update`, {
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/update`, {
                 ...param,
                 id: editing.id,
             });
             if (res.data.code === 200) {
                 message.success("修改成功");
                 setModalOpen(false);
-                await fetchTasks();
+                await fetchTasks(currentPage, pageSize);
             } else {
                 message.error(res.data.msg || "修改失败");
             }
         } else {
-            const res = await axios.post(`${BASE_URL}/SpiderTask/insert`, param);
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/insert`, param);
             if (res.data.code === 200) {
                 message.success("添加成功");
                 setModalOpen(false);
-                await fetchTasks();
+                await fetchTasks(currentPage, pageSize);
             } else {
                 message.error(res.data.msg || "添加失败");
             }
         }
     };
+
     const handleDelete = async (id: number) => {
-        const res = await axios.post(`${BASE_URL}/SpiderTask/delete?id=${id}`);
+        const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/delete?id=${id}`);
         message.success(res.data.msg || "删除成功");
-        await fetchTasks();
+        await fetchTasks(currentPage, pageSize);
     };
+    const handleBatchDelete = async () => {
+        if (selectedRowKeys.length === 0) {
+            messageApi.warning("请先选择要删除的行!");
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/deleteBatch`, selectedRowKeys)
+            if (res.data.code === 200) {
+                message.destroy();
+                messageApi.success({content:"批量删除成功!",duration:2});
+                setSelectedRowKeys([]);
+                // 删除后刷新列表
+                fetchTasks(currentPage, pageSize);
+            } else {
+                message.destroy();
+                messageApi.error(res.data.msg || "批量删除失败!");
+            }
+        } finally {
+            setLoading(true)
+        }
+    }
     const runTask = async (id: number) => {
-        const res = await axios.get(`${BASE_URL}/SpiderTask/start?id=${id}`);
+        const res = await axios.get(`${VITE_BASE_URL}/SpiderTask/start?id=${id}`);
         if (res.data.code === 200) {
             messageApi.success("任务启动成功!");
-            await fetchTasks();
+            await fetchTasks(currentPage, pageSize);
         } else {
             messageApi.error(res.data.msg || "任务启动失败!");
         }
     };
 
-    /** ✅ 搜索与重置逻辑 */
+    // 点击搜索按钮时才搜索关键词
     const handleSearch = () => {
         setCurrentPage(1);
-        fetchTasks(searchForm.getFieldsValue());
+        fetchTasks(1, pageSize);
     };
+
+    // 重置表单并查询全部
     const handleReset = () => {
         searchForm.resetFields();
         setCurrentPage(1);
-        fetchTasks();
+        fetchTasks(1, pageSize);
     };
 
     return (
@@ -200,11 +242,12 @@ const TaskListPage: React.FC = () => {
                 <div className="max-w-5xl mx-auto">
                     {/* 搜索表单 */}
                     <Form layout="inline" form={searchForm}>
-                        <Form.Item name="searchInfo" label="搜索">
+                        <Form.Item name="searchKeywords" label="搜索">
                             <Input
                                 placeholder="支持搜索名称、描述、关键词"
                                 allowClear
                                 style={{ width: 300 }}
+                                onPressEnter={handleSearch}
                             />
                         </Form.Item>
                         <Form.Item name="status" label="任务状态">
@@ -212,15 +255,20 @@ const TaskListPage: React.FC = () => {
                                 placeholder="选择状态"
                                 allowClear
                                 style={{ width: 200 }}
-                                onChange={() => {
-                                    setCurrentPage(1);
-                                    fetchTasks(searchForm.getFieldsValue());
-                                }}
+                                onChange={handleStatusChange}
                             >
                                 <Select.Option value="已完成">已完成</Select.Option>
                                 <Select.Option value="已创建">已创建</Select.Option>
                                 <Select.Option value="已失败">已失败</Select.Option>
                             </Select>
+                        </Form.Item>
+                        <Form.Item name="dateRange" label="日期范围">
+                            <RangePicker
+                                placeholder={["开始日期", "结束日期"]}
+                                showTime={{ format: "HH:mm" }}
+                                format="YYYY-MM-DD HH:mm"
+                                onChange={handleDateRangeChange}
+                            />
                         </Form.Item>
                         <Form.Item>
                             <Space>
@@ -238,10 +286,21 @@ const TaskListPage: React.FC = () => {
                         <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>
                             新增
                         </Button>
+                        <Popconfirm
+                            title="确认删除选中的项？"
+                            onConfirm={handleBatchDelete}
+                            okText="确认"
+                            cancelText="取消"
+                        >
+                            <Button danger disabled={!selectedRowKeys.length} loading={loading}>
+                                删除选中项
+                            </Button>
+                        </Popconfirm>
                     </div>
 
                     {/* 表格 */}
                     <Table<TaskItem>
+                        rowSelection={rowSelection}
                         loading={loading}
                         rowKey="id"
                         columns={columns}
@@ -256,10 +315,12 @@ const TaskListPage: React.FC = () => {
                             onChange: (page, size) => {
                                 setCurrentPage(page);
                                 setPageSize(size ?? pageSize);
+                                fetchTasks(page, size ?? pageSize);
                             },
                             onShowSizeChange: (_, size) => {
                                 setCurrentPage(1);
                                 setPageSize(size);
+                                fetchTasks(1, size);
                             },
                         }}
                     />
@@ -291,9 +352,7 @@ const TaskListPage: React.FC = () => {
                             <Form.Item
                                 name="keywords"
                                 label="爬取关键词"
-                                rules={[
-                                    { required: true, message: "请输入关键词（可用逗号分隔）" },
-                                ]}
+                                rules={[{ required: true, message: "请输入关键词（可用逗号分隔）" }]}
                             >
                                 <Select
                                     mode="tags"

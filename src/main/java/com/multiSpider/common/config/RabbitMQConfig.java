@@ -32,13 +32,6 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    // 声明 SpringBootStatus 队列（durable = true, exclusive = false, autoDelete = false）
-//    @Bean(QUEUE_SPRING_BOOT_STATUS)
-//    public Queue springBootStatusQueue() {
-//        // new Queue(name, durable, exclusive, autoDelete)
-//        return new Queue(QUEUE_SPRING_BOOT_STATUS, true, false, false);
-//    }
-    // 声明 SpringBootData 队列（durable = true, exclusive = false, autoDelete = false）
     @Bean(QUEUE_SPRING_BOOT_DATA)
     public Queue springBootDataQueue() {
         // new Queue(name, durable, exclusive, autoDelete)
@@ -50,13 +43,6 @@ public class RabbitMQConfig {
         return new Queue(QUEUE_FRONT, true, false, false);
     }
 
-    // 绑定：Fanout 模式不需要 routingKey，广播到所有绑定的队列
-//    @Bean
-//    public Binding bindSpringBootStatusQueue(
-//            @Qualifier(QUEUE_SPRING_BOOT_STATUS) Queue queue,
-//            @Qualifier(EXCHANGE_FANOUT) FanoutExchange exchange) {
-//        return BindingBuilder.bind(queue).to(exchange);
-//    }
     @Bean
     public Binding bindSpringBootDataQueue(
             @Qualifier(QUEUE_SPRING_BOOT_DATA) Queue queue,
@@ -70,8 +56,4 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(queue).to(exchange);
     }
 
-//    @Bean
-//    public MessageConverter jsonMessageConverter() {
-//        return new Jackson2JsonMessageConverter();
-//    }
 }

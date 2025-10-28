@@ -1,10 +1,12 @@
 package com.multiSpider.service.impl;
 
+import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.multiSpider.entity.SearchInfo;
 import com.multiSpider.entity.SpiderTask;
 import com.multiSpider.entity.TaskName;
 import com.multiSpider.service.SpiderTaskService;
@@ -12,6 +14,8 @@ import com.multiSpider.mapper.SpiderTaskMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,22 +47,54 @@ public class SpiderTaskServiceImpl extends ServiceImpl<SpiderTaskMapper, SpiderT
         return list(queryWrapper);
     }
     @Override
-    public Page<SpiderTask> listSearchTasks(Integer currentPage,Integer pageSize,String searchKeyword,String status){
-        QueryWrapper<SpiderTask> queryWrapper=new QueryWrapper<>();
-        if(StringUtils.hasText(status)){
-            queryWrapper.eq("status",status);
+    public Page<SpiderTask> listSearchTasks(SearchInfo searchInfo){
+        QueryWrapper<SpiderTask> queryWrapper = new QueryWrapper<>();
+
+        // 处理分页信息
+        Long currentPage = searchInfo.getCurrentPage() != null ? searchInfo.getCurrentPage() : 1L;
+        Long pageSize = searchInfo.getPageSize() != null ? searchInfo.getPageSize() : 10L;
+
+        String status = searchInfo.getStatus();
+        String searchKeywords = searchInfo.getSearchKeywords();
+        String startTime = searchInfo.getStartTime();
+        String endTime = searchInfo.getEndTime();
+
+        if (StringUtils.hasText(status)) {
+            queryWrapper.eq("status", status);
         }
 
-        if(StringUtils.hasText(searchKeyword)){
-            queryWrapper.and(q ->q
-                    .like("name",searchKeyword)
-                    .or().like("description",searchKeyword)
-                    .or().like("keywords",searchKeyword)
+        if (StringUtils.hasText(searchKeywords)) {
+            queryWrapper.and(q -> q
+                    .like("name", searchKeywords)
+                    .or().like("description", searchKeywords)
+                    .or().like("keywords", searchKeywords)
             );
         }
-        Page<SpiderTask> p=new Page<>(currentPage,pageSize);
-        return page(p, queryWrapper);
 
+        // 处理时间范围
+        if (StringUtils.hasText(startTime) && StringUtils.hasText(endTime)) {
+            // 转换日期格式
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime start = LocalDateTime.parse(startTime, formatter);
+            LocalDateTime end = LocalDateTime.parse(endTime, formatter);
+
+            queryWrapper.and(q -> q
+                    .ge("updated_at", start)
+                    .le("updated_at", end)
+            );
+        } else if (StringUtils.hasText(startTime)) {
+            // 单一开始时间
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime start = LocalDateTime.parse(startTime, formatter);
+
+            queryWrapper.and(q -> q
+                    .ge("updated_at", start)
+            );
+        }
+
+        // 创建分页对象
+        Page<SpiderTask> page = new Page<>(currentPage, pageSize);
+        return page(page, queryWrapper);
     }
 }
 

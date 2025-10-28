@@ -7,11 +7,8 @@
 import React, {useEffect, useState} from 'react'
 import {Table, message,Popconfirm,Button} from 'antd'
 import type {ColumnsType} from 'antd/es/table'
-// import CustomPageHeader from '@/components/PageHeader'
 import axios from 'axios'
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-
+const VITE_BASE_URL= import.meta.env.VITE_BASE_URL
 // 任务的基本类型定义
 interface TaskItem {
     id: number
@@ -37,7 +34,7 @@ const TaskResultPage: React.FC = () => {
     const [total, setTotal] = useState<number>(0)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
     const columns: ColumnsType<TaskItem> = [
-        {title: "任务id", dataIndex: "taskName", key: "taskName"},
+        {title: "任务名称", dataIndex: "taskName", key: "taskName"},
         {title: "标题", dataIndex: "title", key: "title"},
         {title: "关键词", dataIndex: "keywords", key: "title"},
         {
@@ -79,12 +76,12 @@ const TaskResultPage: React.FC = () => {
     const fetchTasks = async (page = currentPage, size = pageSize) => {
         try {
             setLoading(true);
-            const res1 = await axios.get(`${BASE_URL}/SpiderResult/query`, {
+            const res1 = await axios.get(`${VITE_BASE_URL}/SpiderResult/query`, {
                 params: {
                     currentPage: page, pageSize: size,
                 },
             })
-            const res2 = await axios.get(`${BASE_URL}/SpiderTask/getTaskName`)
+            const res2 = await axios.get(`${VITE_BASE_URL}/SpiderTask/getTaskName`)
 
             if (res1.data.code === 200) {
                 setTasks(res1.data.data);
@@ -128,7 +125,7 @@ const TaskResultPage: React.FC = () => {
         }
         setLoading(true);
         try {
-            const res = await axios.post(`${BASE_URL}/SpiderResult/deleteBatch`, selectedRowKeys)
+            const res = await axios.post(`${VITE_BASE_URL}/SpiderResult/deleteBatch`, selectedRowKeys)
             if (res.data.code === 200) {
                 message.destroy();
                 messageApi.success({content:"批量删除成功!",duration:2});

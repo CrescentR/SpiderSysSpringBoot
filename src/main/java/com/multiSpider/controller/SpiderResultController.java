@@ -1,5 +1,6 @@
 package com.multiSpider.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
@@ -22,8 +23,10 @@ public class SpiderResultController {
             @RequestParam(required = false,defaultValue="10") Integer pageSize
     ){
         try{
+            LambdaQueryWrapper<SpiderResult> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.orderByDesc(SpiderResult::getDateTime); // 按 createTime 降序排列
             Page<SpiderResult> pageInfo =new Page<>(currentPage,pageSize);
-            Page<SpiderResult> result= spiderResultService.page(pageInfo);
+            Page<SpiderResult> result= spiderResultService.page(pageInfo,queryWrapper);
             return Result.ok("查询成功",result.getRecords(),result.getTotal());
         }catch (SpiderException e){
             e.printStackTrace();
