@@ -1,13 +1,10 @@
 package com.multiSpider.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
-import com.multiSpider.entity.ResultSearchInfo;
+import com.multiSpider.dto.login.ResultSearchInfo;
 import com.multiSpider.entity.SpiderResult;
-import com.multiSpider.entity.SpiderTask;
-import com.multiSpider.entity.TaskSearchInfo;
 import com.multiSpider.service.SpiderResultService;
 import org.springframework.web.bind.annotation.*;
 

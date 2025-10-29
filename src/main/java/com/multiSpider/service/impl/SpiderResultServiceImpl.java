@@ -3,8 +3,8 @@ package com.multiSpider.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.multiSpider.dto.login.ResultSearchInfo;
 import com.multiSpider.entity.*;
-import com.multiSpider.mapper.SpiderTaskMapper;
 import com.multiSpider.service.SpiderResultService;
 import com.multiSpider.mapper.SpiderResultMapper;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
 * @author CharlesForbit

@@ -1,6 +1,6 @@
 package com.multiSpider.service;
 
-import com.multiSpider.entity.MQReturn;
+import com.multiSpider.vo.queue.MQReturn;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 

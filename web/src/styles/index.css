@@ -9,3 +9,9 @@ html, body, #root {
     background: rgba(255,255,255) url("@/assets/CrescentLogo.svg") no-repeat center/contain;
     border-radius: 4px;
 }
+
+.hajimi{
+    width: 200px;
+    height: 200px;
+    background: rgba(255,0,0)
+}

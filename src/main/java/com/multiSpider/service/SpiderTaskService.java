@@ -1,10 +1,10 @@
 package com.multiSpider.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.multiSpider.entity.TaskSearchInfo;
+import com.multiSpider.dto.TaskSearchInfo;
 import com.multiSpider.entity.SpiderTask;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.multiSpider.entity.TaskName;
+import com.multiSpider.vo.TaskName;
 
 import java.util.List;
 

@@ -1,11 +1,9 @@
 package com.multiSpider.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.multiSpider.entity.ResultSearchInfo;
+import com.multiSpider.dto.login.ResultSearchInfo;
 import com.multiSpider.entity.SpiderResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.multiSpider.entity.SpiderTask;
-import com.multiSpider.entity.TaskSearchInfo;
 
 /**
 * @author CharlesForbit

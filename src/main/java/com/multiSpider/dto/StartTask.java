@@ -1,4 +1,4 @@
-package com.multiSpider.entity;
+package com.multiSpider.dto;
 
 import lombok.Data;
 

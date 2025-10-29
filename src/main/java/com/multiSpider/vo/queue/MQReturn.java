@@ -1,4 +1,4 @@
-package com.multiSpider.entity;
+package com.multiSpider.vo.queue;
 
 import lombok.Data;
 

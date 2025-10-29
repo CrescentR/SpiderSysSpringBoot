@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.multiSpider.common.exception.SpiderException;
 import com.multiSpider.common.result.Result;
+import com.multiSpider.dto.TaskSearchInfo;
 import com.multiSpider.entity.*;
 import com.multiSpider.service.SpiderCrawlerService;
 import com.multiSpider.service.SpiderTaskService;
+import com.multiSpider.vo.TaskName;
+import com.multiSpider.vo.queue.MQReturn;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
