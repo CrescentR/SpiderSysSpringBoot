@@ -9,8 +9,6 @@ import { createBrowserRouter } from 'react-router-dom'
 const AppLayout = lazy(() => import('@/layout/AppLayout'))
 const Home = lazy(() => import('@/pages/Home'))
 const Reports = lazy(() => import('@/pages/Reports'))
-const Settings = lazy(() => import('@/pages/Settings'))
-const Feature = lazy(() => import('@/pages/Feature'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const TaskList = lazy(() => import('@/pages/TaskList'))
 const SpiderResult = lazy(() => import('@/pages/SpiderResult'))
@@ -22,8 +20,6 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'reports', element: <Reports /> },
-      { path: 'settings', element: <Settings /> },
-      { path: 'feature/:n', element: <Feature /> },
       { path: 'task-list', element: <TaskList /> },
       { path: 'spider-result', element: <SpiderResult /> },
       { path: '*', element: <NotFound /> }

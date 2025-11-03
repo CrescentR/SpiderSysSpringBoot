@@ -2,6 +2,7 @@ package com.multiSpider.mapper;
 
 import com.multiSpider.entity.SpiderTask;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.multiSpider.vo.StatusData;
 import com.multiSpider.vo.TaskName;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 */
 public interface SpiderTaskMapper extends BaseMapper<SpiderTask> {
     List<TaskName> selectTaskName();
+    List<StatusData> countStatusTask();
 }
 
 

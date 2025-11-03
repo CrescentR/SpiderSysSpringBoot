@@ -25,4 +25,13 @@
     <select id="selectTaskName" resultType="com.multiSpider.vo.TaskName">
         SELECT id, name FROM spider_task
     </select>
+    <select id="countStatusTask" resultType="com.multiSpider.vo.StatusData">
+        SELECT
+            status,
+            COUNT(*) AS count
+        FROM
+            spider_task
+        GROUP BY
+            status;
+    </select>
 </mapper>

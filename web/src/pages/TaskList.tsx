@@ -164,6 +164,8 @@ const TaskListPage: React.FC = () => {
 
     const handleOk = async () => {
         const param = await listForm.validateFields();
+        const now = new Date();
+        param.updatedAt=new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString();
         if (editing) {
             const res = await axios.post(`${VITE_BASE_URL}/SpiderTask/update`, {
                 ...param,

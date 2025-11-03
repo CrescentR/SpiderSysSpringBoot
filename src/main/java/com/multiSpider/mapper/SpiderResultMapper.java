@@ -2,6 +2,9 @@ package com.multiSpider.mapper;
 
 import com.multiSpider.entity.SpiderResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.multiSpider.vo.DateData;
+
+import java.util.List;
 
 /**
 * @author CharlesForbit
@@ -10,7 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity com.quickStart.entity.SpiderResult
 */
 public interface SpiderResultMapper extends BaseMapper<SpiderResult> {
-
+    List<DateData> countDateResult();
 }
 
 

@@ -23,16 +23,6 @@ const AutoBreadcrumb: React.FC = () => {
       list.push({ title: '报表' })
       return list
     }
-    if (path.startsWith('/settings')) {
-      list.push({ title: '设置' })
-      return list
-    }
-    if (path.startsWith('/feature/')) {
-      const n = path.split('/').pop()
-      list.push({ title: '功能页' })
-      list.push({ title: `功能${n}` })
-      return list
-    }
     list.push({ title: '未分类' })
     return list
   }, [location.pathname])

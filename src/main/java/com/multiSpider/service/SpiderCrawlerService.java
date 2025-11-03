@@ -4,7 +4,9 @@ import com.multiSpider.vo.queue.MQReturn;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SpiderCrawlerService {
@@ -22,7 +24,7 @@ public class SpiderCrawlerService {
                 .retrieve()
                 .bodyToMono(MQReturn.class)
                 .block();
-        spiderTaskService.update().set("status","已完成").eq("id",taskId).update();
+        spiderTaskService.update().set("status","已完成").set("updated_at", LocalDateTime.now()).eq("id",taskId).update();
         return result;
     }
 }

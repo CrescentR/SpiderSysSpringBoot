@@ -10,12 +10,23 @@
             <result property="title" column="title" />
             <result property="url" column="url" />
             <result property="source" column="source" />
-            <result property="summary" column="summary" />
-            <result property="createdAt" column="created_at" />
+            <result property="keywords" column="keywords" />
+            <result property="dateTime" column="date_time" />
     </resultMap>
 
     <sql id="Base_Column_List">
         id,task_id,title,url,source,summary,
         created_at
     </sql>
+    <select id="countDateResult" resultType="com.multiSpider.vo.DateData">
+    SELECT
+        DATE(date_time) AS date,
+        COUNT(*) AS count
+    FROM
+        spider_result
+    GROUP BY
+        DATE(date_time)
+    ORDER BY
+        date;
+    </select>
 </mapper>
